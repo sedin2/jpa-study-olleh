@@ -2,7 +2,29 @@ plugins {
     id 'org.springframework.boot' version '2.3.4.RELEASE'
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'java'
+    id "com.github.node-gradle.node" version '2.2.4'
 }
+
+/**
+ * npm install start
+ */
+node {
+    version = '12.16.1'
+    download = true
+    nodeModulesDir = file("${projectDir}/src/main/resources/static")
+}
+
+task copyFrontLib(type: Copy) {
+    from "${projectDir}/src/main/resources/static"
+    into "${projectDir}/build/resources/main/static/."
+}
+
+copyFrontLib.dependsOn npmInstall
+compileJava.dependsOn copyFrontLib
+
+/**
+ * npm install end
+ */
 
 group = 'com.studyolleh'
 version = '0.0.1-SNAPSHOT'
