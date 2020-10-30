@@ -18,6 +18,7 @@ import javax.validation.Valid;
 import java.util.Collections;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AccountService implements UserDetailsService {
 
@@ -46,13 +47,26 @@ public class AccountService implements UserDetailsService {
         mailMessage.setTo(newAccount.getEmail());
         mailMessage.setSubject("스터디올래, 회원 가입 인증");
         mailMessage.setText("/check-email-token?token=" + newAccount.getEmailCheckToken() +
-                "&email=" + newAccount.getEmail());
+                            "&email=" + newAccount.getEmail());
         javaMailSender.send(mailMessage);
     }
 
-    public void verifyEmailToken(Account account) {
+    @Transactional(readOnly = true)
+    @Override
+    public UserDetails loadUserByUsername(String emailOrNickname) throws UsernameNotFoundException {
+        Account account = accountRepository.findByEmail(emailOrNickname);
+        if (account == null) {
+            account = accountRepository.findByNickname(emailOrNickname);
+        }
+        if (account == null) {
+            throw new UsernameNotFoundException(emailOrNickname);
+        }
+        return new UserAccount(account);
+    }
+
+    public void completeSignUp(Account account) {
         account.completeSignUp();
-        accountRepository.save(account);
+        login(account);
     }
 
     private Account saveNewAccount(@Valid SignUpForm signUpForm) {
@@ -65,17 +79,5 @@ public class AccountService implements UserDetailsService {
                                  .studyUpdatedByWeb(true)
                                  .build();
         return accountRepository.save(account);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String emailOrNickname) throws UsernameNotFoundException {
-        Account account = accountRepository.findByEmail(emailOrNickname);
-        if (account == null) {
-            account = accountRepository.findByNickname(emailOrNickname);
-        }
-        if (account == null) {
-            throw new UsernameNotFoundException(emailOrNickname);
-        }
-        return new UserAccount(account);
     }
 }
