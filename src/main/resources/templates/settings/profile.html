@@ -24,7 +24,7 @@
                     <form class="col-sm-6" action="#" th:action="@{/settings/profile}" th:object="${profile}" method="post" novalidate>
                         <div class="form-group">
                             <label for="bio">한 줄 소개</label>
-                            <input id="bio" type="text" th:field="*{bio}" class="form-control" placeholder="간략한 소개를 부탁합니다." aria-describedby="hioHelp" required>
+                            <input id="bio" type="text" th:field="*{bio}" class="form-control" placeholder="간략한 소개를 부탁합니다." aria-describedby="bioHelp" required>
                             <small id="bioHelp" class="form-text text-muted">
                                 길지 않게 35자 이내로 입력하세요.
                             </small>

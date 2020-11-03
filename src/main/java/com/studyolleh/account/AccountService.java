@@ -1,6 +1,7 @@
 package com.studyolleh.account;
 
 import com.studyolleh.domain.Account;
+import com.studyolleh.settings.PasswordForm;
 import com.studyolleh.settings.Profile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
@@ -48,7 +49,7 @@ public class AccountService implements UserDetailsService {
         mailMessage.setTo(newAccount.getEmail());
         mailMessage.setSubject("스터디올래, 회원 가입 인증");
         mailMessage.setText("/check-email-token?token=" + newAccount.getEmailCheckToken() +
-                            "&email=" + newAccount.getEmail());
+                "&email=" + newAccount.getEmail());
         javaMailSender.send(mailMessage);
     }
 
@@ -78,6 +79,15 @@ public class AccountService implements UserDetailsService {
         account.setProfileImage(profile.getProfileImage());
         accountRepository.save(account);
         // TODO 문제 하나 더 남음
+    }
+
+    public void updatePassword(Account account, PasswordForm passwordForm) {
+        account.setPassword(passwordEncoder.encode(passwordForm.getNewPassword()));
+        accountRepository.save(account);
+    }
+
+    public boolean isSamePasswordBeforeAndAfter(Account account, PasswordForm passwordForm) {
+        return account.getPassword().equals(passwordEncoder.encode(passwordForm.getNewPassword()));
     }
 
     private Account saveNewAccount(@Valid SignUpForm signUpForm) {
