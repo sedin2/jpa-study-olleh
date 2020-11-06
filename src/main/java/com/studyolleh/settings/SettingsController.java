@@ -25,11 +25,16 @@ public class SettingsController {
         webDataBinder.addValidators(new PasswordFormValidator());
     }
 
+    static final String ROOT_URL = "/";
+
     static final String SETTINGS_PROFILE_VIEW_NAME = "settings/profile";
-    static final String SETTINGS_PROFILE_URL = "/settings/profile";
+    static final String SETTINGS_PROFILE_URL = ROOT_URL + SETTINGS_PROFILE_VIEW_NAME;
 
     static final String SETTINGS_PASSWORD_VIEW_NAME = "settings/password";
-    static final String SETTINGS_PASSWORD_URL = "/settings/password";
+    static final String SETTINGS_PASSWORD_URL = ROOT_URL + SETTINGS_PASSWORD_VIEW_NAME;
+
+    static final String SETTINGS_NOTIFICATION_VIEW_NAME = "settings/notifications";
+    static final String SETTINGS_NOTIFICATION_URL = ROOT_URL + SETTINGS_NOTIFICATION_VIEW_NAME;
 
     private final AccountService accountService;
 
@@ -69,5 +74,24 @@ public class SettingsController {
         accountService.updatePassword(account, passwordForm);
         attributes.addFlashAttribute("message", "비밀번호를 수정했습니다.");
         return "redirect:" + SETTINGS_PASSWORD_URL;
+    }
+
+    @GetMapping(SETTINGS_NOTIFICATION_URL)
+    public String notificationUpdateForm(@CurrentUser Account account, Model model) {
+        model.addAttribute(account);
+        model.addAttribute(new Notifications(account));
+        return SETTINGS_NOTIFICATION_VIEW_NAME;
+    }
+
+    @PostMapping(SETTINGS_NOTIFICATION_URL)
+    public String updateNotification(@CurrentUser Account account, @Valid Notifications notifications,
+                                     Errors errors, Model model, RedirectAttributes attributes) {
+        if (errors.hasErrors()) {
+            model.addAttribute(account);
+            return SETTINGS_NOTIFICATION_VIEW_NAME;
+        }
+        accountService.updateNotification(account, notifications);
+        attributes.addFlashAttribute("message", "알림을 수정했습니다.");
+        return "redirect:" + SETTINGS_NOTIFICATION_URL;
     }
 }

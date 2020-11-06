@@ -1,6 +1,7 @@
 package com.studyolleh.account;
 
 import com.studyolleh.domain.Account;
+import com.studyolleh.settings.Notifications;
 import com.studyolleh.settings.PasswordForm;
 import com.studyolleh.settings.Profile;
 import lombok.RequiredArgsConstructor;
@@ -88,6 +89,16 @@ public class AccountService implements UserDetailsService {
 
     public boolean isSamePasswordBeforeAndAfter(Account account, PasswordForm passwordForm) {
         return account.getPassword().equals(passwordEncoder.encode(passwordForm.getNewPassword()));
+    }
+
+    public void updateNotification(Account account, Notifications notifications) {
+        account.setStudyCreatedByEmail(notifications.isStudyCreatedByEmail());
+        account.setStudyCreatedByWeb(notifications.isStudyCreatedByWeb());
+        account.setStudyEnrollmentResultByEmail(notifications.isStudyEnrollmentResultByEmail());
+        account.setStudyEnrollmentResultByWeb(notifications.isStudyEnrollmentResultByWeb());
+        account.setStudyUpdatedByEmail(notifications.isStudyUpdatedByEmail());
+        account.setStudyUpdatedByWeb(notifications.isStudyUpdatedByWeb());
+        accountRepository.save(account);
     }
 
     private Account saveNewAccount(@Valid SignUpForm signUpForm) {
