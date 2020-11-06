@@ -125,4 +125,52 @@ class SettingsControllerTest {
                 .andExpect(model().attributeExists("passwordForm"));
     }
 
+    @WithAccount("sedin")
+    @DisplayName("알림 수정 폼")
+    @Test
+    void updateNotificationsForm() throws Exception {
+        mockMvc.perform(get(SettingsController.SETTINGS_NOTIFICATION_URL))
+               .andExpect(status().isOk())
+               .andExpect(model().attributeExists("account"))
+               .andExpect(model().attributeExists("notifications"));
+    }
+
+    @WithAccount("sedin")
+    @DisplayName("알림 수정 - 입력값 정상")
+    @Test
+    void updateNotificationsSuccess() throws Exception {
+        mockMvc.perform(post(SettingsController.SETTINGS_NOTIFICATION_URL)
+               .param("studyCreatedByEmail", String.valueOf(true))
+               .param("studyCreatedByWeb", String.valueOf(true))
+               .param("studyEnrollmentResultByEmail", String.valueOf(true))
+               .param("studyEnrollmentResultByWeb", String.valueOf(true))
+               .param("studyUpdatedByEmail", String.valueOf(true))
+               .param("studyUpdatedByWeb", String.valueOf(true))
+               .with(csrf()))
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrl(SettingsController.SETTINGS_NOTIFICATION_URL))
+               .andExpect(flash().attributeExists("message"));
+
+        Account account = accountRepository.findByNickname("sedin");
+        assertTrue(account.isStudyCreatedByEmail());
+        assertTrue(account.isStudyCreatedByWeb());
+        assertTrue(account.isStudyEnrollmentResultByEmail());
+        assertTrue(account.isStudyEnrollmentResultByWeb());
+        assertTrue(account.isStudyUpdatedByEmail());
+        assertTrue(account.isStudyUpdatedByWeb());
+    }
+
+    @WithAccount("sedin")
+    @DisplayName("알림 수정 - 입력값 에러 - boolean 값이 아닌 값이 들어 올 때")
+    @Test
+    void updateNotificationsFail() throws Exception {
+        mockMvc.perform(post(SettingsController.SETTINGS_NOTIFICATION_URL)
+               .param("studyCreatedByEmail", "asdf")
+               .with(csrf()))
+               .andExpect(status().isOk())
+               .andExpect(view().name(SettingsController.SETTINGS_NOTIFICATION_VIEW_NAME))
+               .andExpect(model().attributeExists("account"))
+               .andExpect(model().attributeExists("notifications"))
+               .andExpect(model().hasErrors());
+    }
 }
