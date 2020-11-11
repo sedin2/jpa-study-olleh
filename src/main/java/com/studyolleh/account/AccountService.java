@@ -1,6 +1,7 @@
 package com.studyolleh.account;
 
 import com.studyolleh.domain.Account;
+import com.studyolleh.settings.NicknameForm;
 import com.studyolleh.settings.Notifications;
 import com.studyolleh.settings.PasswordForm;
 import com.studyolleh.settings.Profile;
@@ -91,6 +92,12 @@ public class AccountService implements UserDetailsService {
     public void updateNotification(Account account, Notifications notifications) {
         modelMapper.map(notifications, account);
         accountRepository.save(account);
+    }
+
+    public void updateNickname(Account account, NicknameForm nicknameForm) {
+        modelMapper.map(nicknameForm, account);
+        accountRepository.save(account);
+        login(account);
     }
 
     private Account saveNewAccount(@Valid SignUpForm signUpForm) {
