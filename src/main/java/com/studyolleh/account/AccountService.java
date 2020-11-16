@@ -1,6 +1,7 @@
 package com.studyolleh.account;
 
 import com.studyolleh.domain.Account;
+import com.studyolleh.domain.Tag;
 import com.studyolleh.settings.NicknameForm;
 import com.studyolleh.settings.Notifications;
 import com.studyolleh.settings.PasswordForm;
@@ -21,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Valid;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -108,6 +112,14 @@ public class AccountService implements UserDetailsService {
         mailMessage.setText("/login-by-email?token=" + account.getEmailCheckToken() +
                 "&email=" + account.getEmail());
         javaMailSender.send(mailMessage);
+    }
+
+    public void addTag(Account account, Tag tag) {
+        accountRepository.findById(account.getId()).ifPresent(byId -> byId.getTags().add(tag));
+    }
+
+    public Set<Tag> getTags(Account account) {
+        return accountRepository.findById(account.getId()).map(byId -> byId.getTags()).get();
     }
 
     private Account saveNewAccount(@Valid SignUpForm signUpForm) {
