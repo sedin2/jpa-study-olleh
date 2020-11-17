@@ -1,17 +1,24 @@
 package com.studyolleh.settings;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyolleh.WithAccount;
 import com.studyolleh.account.AccountRepository;
 import com.studyolleh.account.AccountService;
 import com.studyolleh.domain.Account;
+import com.studyolleh.domain.Tag;
+import com.studyolleh.tag.TagRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -21,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class SettingsControllerTest {
 
     @Autowired
@@ -33,7 +41,13 @@ class SettingsControllerTest {
     AccountRepository accountRepository;
 
     @Autowired
+    TagRepository tagRepository;
+
+    @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @AfterEach
     void afterEach() {
@@ -213,5 +227,68 @@ class SettingsControllerTest {
                 .andExpect(model().attributeExists("account"))
                 .andExpect(model().attributeExists("nicknameForm"))
                 .andExpect(model().hasErrors());
+    }
+
+    @WithAccount("sedin")
+    @DisplayName("태그 수정 폼")
+    @Test
+    void updateTagsForm() throws Exception {
+        mockMvc.perform(get(SettingsController.SETTINGS_TAGS_URL))
+                .andExpect(view().name(SettingsController.SETTINGS_TAGS_VIEW_NAME))
+                .andExpect(model().attributeExists("account"))
+                .andExpect(model().attributeExists("tags"))
+                .andExpect(model().attributeExists("whitelist"));
+    }
+
+    @WithAccount("sedin")
+    @DisplayName("계정에 태그 추가")
+    @Test
+    void addTag() throws Exception {
+        TagForm tagForm = new TagForm();
+        tagForm.setTagTitle("newTag");
+
+        mockMvc.perform(post(SettingsController.SETTINGS_TAGS_URL + "/add")
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .content(objectMapper.writeValueAsString(tagForm))
+                       .with(csrf()))
+                .andExpect(status().isOk());
+        Optional<Tag> newTag = tagRepository.findByTitle("newTag");
+        assertNotNull(newTag);
+        assertTrue(accountRepository.findByNickname("sedin").getTags().contains(newTag.get()));
+    }
+
+    @WithAccount("sedin")
+    @DisplayName("계정에 태그 삭제 - 입력값 정상")
+    @Test
+    void removeTagWithSuccess() throws Exception {
+        Account loginUser = accountRepository.findByNickname("sedin");
+        Tag newTag = tagRepository.save(Tag.builder().title("newTag").build());
+        accountService.addTag(loginUser, newTag);
+
+        assertTrue(loginUser.getTags().contains(newTag));
+
+        TagForm tagForm = new TagForm();
+        tagForm.setTagTitle("newTag");
+
+        mockMvc.perform(post(SettingsController.SETTINGS_TAGS_URL + "/remove")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(tagForm))
+                .with(csrf()))
+                .andExpect(status().isOk());
+        assertFalse(loginUser.getTags().contains(newTag));
+    }
+
+    @WithAccount("sedin")
+    @DisplayName("계정에 태그 삭제 - 입력값 에러")
+    @Test
+    void removeTagWithFail() throws Exception {
+        TagForm tagForm = new TagForm();
+        tagForm.setTagTitle("newTag");
+
+        mockMvc.perform(post(SettingsController.SETTINGS_TAGS_URL + "/remove")
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .content(objectMapper.writeValueAsString(tagForm))
+                       .with(csrf()))
+                .andExpect(status().isBadRequest());
     }
 }
