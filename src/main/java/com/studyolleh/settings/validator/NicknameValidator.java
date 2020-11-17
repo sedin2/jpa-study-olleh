@@ -1,7 +1,8 @@
-package com.studyolleh.settings;
+package com.studyolleh.settings.validator;
 
 import com.studyolleh.account.AccountRepository;
 import com.studyolleh.domain.Account;
+import com.studyolleh.settings.form.NicknameForm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;

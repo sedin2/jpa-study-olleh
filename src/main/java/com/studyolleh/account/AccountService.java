@@ -2,10 +2,11 @@ package com.studyolleh.account;
 
 import com.studyolleh.domain.Account;
 import com.studyolleh.domain.Tag;
-import com.studyolleh.settings.NicknameForm;
-import com.studyolleh.settings.Notifications;
-import com.studyolleh.settings.PasswordForm;
-import com.studyolleh.settings.Profile;
+import com.studyolleh.domain.Zone;
+import com.studyolleh.settings.form.NicknameForm;
+import com.studyolleh.settings.form.Notifications;
+import com.studyolleh.settings.form.PasswordForm;
+import com.studyolleh.settings.form.Profile;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
@@ -121,6 +122,18 @@ public class AccountService implements UserDetailsService {
 
     public void removeTag(Account account, Tag tag) {
         accountRepository.findById(account.getId()).ifPresent(byId -> byId.getTags().remove(tag));
+    }
+
+    public Set<Zone> getZones(Account account) {
+        return accountRepository.findById(account.getId()).map(byId -> byId.getZones()).get();
+    }
+
+    public void addZone(Account account, Zone zone) {
+        accountRepository.findById(account.getId()).ifPresent(byId -> byId.getZones().add(zone));
+    }
+
+    public void removeZone(Account account, Zone zone) {
+        accountRepository.findById(account.getId()).ifPresent(byId -> byId.getZones().remove(zone));
     }
 
     private Account saveNewAccount(@Valid SignUpForm signUpForm) {
