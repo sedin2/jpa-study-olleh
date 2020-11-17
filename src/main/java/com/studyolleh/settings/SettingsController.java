@@ -142,14 +142,26 @@ public class SettingsController {
 
     @PostMapping(SETTINGS_TAGS_URL + "/add")
     @ResponseBody
-    public ResponseEntity updateTags(@CurrentUser Account account, @RequestBody TagForm tagForm, RedirectAttributes attributes ) {
+    public ResponseEntity addTags(@CurrentUser Account account, @RequestBody TagForm tagForm) {
         String title = tagForm.getTagTitle();
         Tag tag = tagRepository.findByTitle(title)
                                .orElseGet(() -> tagRepository.save(Tag.builder()
-                                                                      .title(tagForm.getTagTitle())
-                                                                      .build()));
+                                                             .title(title)
+                                                             .build()));
 
         accountService.addTag(account, tag);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(SETTINGS_TAGS_URL + "/remove")
+    @ResponseBody
+    public ResponseEntity removeTags(@CurrentUser Account account, @RequestBody TagForm tagForm) {
+        String title = tagForm.getTagTitle();
+        return tagRepository.findByTitle(title)
+                            .map(tag -> {
+                                 accountService.removeTag(account, tag);
+                                 return ResponseEntity.ok().build();
+                            })
+                            .orElseGet(() -> ResponseEntity.badRequest().build());
     }
 }

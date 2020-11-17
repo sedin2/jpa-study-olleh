@@ -114,12 +114,16 @@ public class AccountService implements UserDetailsService {
         javaMailSender.send(mailMessage);
     }
 
+    public Set<Tag> getTags(Account account) {
+        return accountRepository.findById(account.getId()).map(byId -> byId.getTags()).get();
+    }
+
     public void addTag(Account account, Tag tag) {
         accountRepository.findById(account.getId()).ifPresent(byId -> byId.getTags().add(tag));
     }
 
-    public Set<Tag> getTags(Account account) {
-        return accountRepository.findById(account.getId()).map(byId -> byId.getTags()).get();
+    public void removeTag(Account account, Tag tag) {
+        accountRepository.findById(account.getId()).ifPresent(byId -> byId.getTags().remove(tag));
     }
 
     private Account saveNewAccount(@Valid SignUpForm signUpForm) {
