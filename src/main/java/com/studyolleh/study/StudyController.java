@@ -43,8 +43,10 @@ public class StudyController {
     }
 
     @PostMapping("/new-study")
-    public String newStudySubmit(@CurrentUser Account account, @Valid StudyForm studyForm, Errors errors) throws UnsupportedEncodingException {
+    public String newStudySubmit(@CurrentUser Account account, @Valid StudyForm studyForm,
+                                 Errors errors, Model model) throws UnsupportedEncodingException {
         if (errors.hasErrors()) {
+            model.addAttribute(account);
             return "study/form";
         }
 
@@ -57,5 +59,12 @@ public class StudyController {
         model.addAttribute(account);
         model.addAttribute(studyRepository.findByPath(path));
         return "study/view";
+    }
+
+    @GetMapping("/study/{path}/members")
+    public String viewStudyMembers(@CurrentUser Account account, @PathVariable String path, Model model) {
+        model.addAttribute(account);
+        model.addAttribute(studyRepository.findByPath(path));
+        return "study/members";
     }
 }
