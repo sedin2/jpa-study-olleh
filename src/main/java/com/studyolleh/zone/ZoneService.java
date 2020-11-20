@@ -30,10 +30,10 @@ public class ZoneService {
                                        .map(line -> {
                                             String[] split = line.split(",");
                                             return Zone.builder()
-                                                    .city(split[0])
-                                                    .localNameOfCity(split[1])
-                                                    .province(split[2])
-                                                    .build();
+                                                       .city(split[0])
+                                                       .localNameOfCity(split[1])
+                                                       .province(split[2])
+                                                       .build();
                                        }).collect(Collectors.toList());
             zoneRepository.saveAll(zoneList);
         }
