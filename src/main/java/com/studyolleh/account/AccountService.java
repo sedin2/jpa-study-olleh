@@ -161,6 +161,14 @@ public class AccountService implements UserDetailsService {
         accountRepository.findById(account.getId()).ifPresent(byId -> byId.getZones().remove(zone));
     }
 
+    public Account getAccount(String nickname) {
+        Account account = accountRepository.findByNickname(nickname);
+        if (nickname == null) {
+            new IllegalArgumentException(nickname + "에 해당하는 사용자가 없습니다.");
+        }
+        return account;
+    }
+
     private Account saveNewAccount(@Valid SignUpForm signUpForm) {
         signUpForm.setPassword(passwordEncoder.encode(signUpForm.getPassword()));
         Account account = modelMapper.map(signUpForm, Account.class);
