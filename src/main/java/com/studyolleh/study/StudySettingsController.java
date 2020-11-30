@@ -8,6 +8,7 @@ import com.studyolleh.domain.Study;
 import com.studyolleh.domain.Tag;
 import com.studyolleh.domain.Zone;
 import com.studyolleh.settings.form.TagForm;
+import com.studyolleh.settings.form.ZoneForm;
 import com.studyolleh.study.form.StudyDescriptionForm;
 import com.studyolleh.tag.TagRepository;
 import com.studyolleh.tag.TagService;
@@ -153,6 +154,32 @@ public class StudySettingsController {
         model.addAttribute("zones", allZonesInStudy);
         model.addAttribute("whitelist", objectMapper.writeValueAsString(allZones));
         return "study/settings/zones";
+    }
+
+    @PostMapping("/zones/add")
+    @ResponseBody
+    public ResponseEntity addZone(@CurrentUser Account account, @PathVariable String path,
+                                  @RequestBody ZoneForm zoneForm) {
+        Study study = studyService.getStudyToUpdateZone(account, path);
+        return zoneRepository.findByCityAndProvince(zoneForm.getCityName(), zoneForm.getProvinceName())
+                             .map(zone -> {
+                                 studyService.addZone(study, zone);
+                                 return ResponseEntity.ok().build();
+                             })
+                             .orElseGet(() -> ResponseEntity.badRequest().build());
+    }
+
+    @PostMapping("/zones/remove")
+    @ResponseBody
+    public ResponseEntity removeZone(@CurrentUser Account account, @PathVariable String path,
+                                     @RequestBody ZoneForm zoneForm) {
+        Study study = studyService.getStudyToUpdateZone(account, path);
+        return zoneRepository.findByCityAndProvince(zoneForm.getCityName(), zoneForm.getProvinceName())
+                             .map(zone -> {
+                                 studyService.removeZone(study, zone);
+                                 return ResponseEntity.ok().build();
+                             })
+                             .orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
     public String getPath(String path) throws UnsupportedEncodingException {

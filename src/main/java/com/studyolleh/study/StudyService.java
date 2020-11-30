@@ -3,6 +3,7 @@ package com.studyolleh.study;
 import com.studyolleh.domain.Account;
 import com.studyolleh.domain.Study;
 import com.studyolleh.domain.Tag;
+import com.studyolleh.domain.Zone;
 import com.studyolleh.study.form.StudyDescriptionForm;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -78,6 +79,14 @@ public class StudyService {
 
     public void removeTag(Study study, Tag tag) {
         study.getTags().remove(tag);
+    }
+
+    public void addZone(Study study, Zone zone) {
+        study.getZones().add(zone);
+    }
+
+    public void removeZone(Study study, Zone zone) {
+        study.getZones().remove(zone);
     }
 
     private void checkIfExistingStudy(String path, Study study) {
