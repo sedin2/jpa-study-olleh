@@ -191,7 +191,7 @@ public class StudySettingsController {
 
     @PostMapping("/study/publish")
     public String publishStudy(@CurrentUser Account account, @PathVariable String path,
-                                       RedirectAttributes attributes) throws UnsupportedEncodingException {
+                               RedirectAttributes attributes) throws UnsupportedEncodingException {
         Study study = studyService.getStudyToUpdateStatus(account, path);
         studyService.publish(study);
         attributes.addFlashAttribute("message", "스터디를 공개했습니다.");
@@ -200,10 +200,36 @@ public class StudySettingsController {
 
     @PostMapping("/study/close")
     public String closeStudy(@CurrentUser Account account, @PathVariable String path,
-                                     RedirectAttributes attributes) throws UnsupportedEncodingException {
+                             RedirectAttributes attributes) throws UnsupportedEncodingException {
         Study study = studyService.getStudyToUpdateStatus(account, path);
         studyService.close(study);
         attributes.addFlashAttribute("message", "스터디를 종료했습니다.");
+        return "redirect:/study/" + getPath(path) + "/settings/study";
+    }
+
+    @PostMapping("/recruit/start")
+    public String startRecruit(@CurrentUser Account account, @PathVariable String path,
+                               RedirectAttributes attributes) throws UnsupportedEncodingException {
+        Study study = studyService.getStudyToUpdateStatus(account, path);
+        if (!study.canUpdateRecruiting()) {
+            attributes.addFlashAttribute("message", "1시간 안에 인원 모집 설정을 여러번 변경할 수 없습니다.");
+            return "redirect:/study/" + getPath(path) + "/settings/study";
+        }
+        studyService.startRecruit(study);
+        attributes.addFlashAttribute("message", "인원 모집을 시작합니다.");
+        return "redirect:/study/" + getPath(path) + "/settings/study";
+    }
+
+    @PostMapping("/recruit/stop")
+    public String stopRecruit(@CurrentUser Account account, @PathVariable String path,
+                              RedirectAttributes attributes) throws UnsupportedEncodingException {
+        Study study = studyService.getStudyToUpdateStatus(account, path);
+        if (!study.canUpdateRecruiting()) {
+            attributes.addFlashAttribute("message", "1시간 안에 인원 모집 설정을 여러번 변경할 수 없습니다.");
+            return "redirect:/study/" + getPath(path) + "/settings/study";
+        }
+        studyService.stopRecruit(study);
+        attributes.addFlashAttribute("message", "인원 모집을 종료합니다.");
         return "redirect:/study/" + getPath(path) + "/settings/study";
     }
 

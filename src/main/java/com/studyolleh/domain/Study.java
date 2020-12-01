@@ -39,10 +39,12 @@ public class Study {
 
     private String shortDescription;
 
-    @Lob @Basic(fetch = FetchType.EAGER)
+    @Lob
+    @Basic(fetch = FetchType.EAGER)
     private String fullDescription;
 
-    @Lob @Basic(fetch = FetchType.EAGER)
+    @Lob
+    @Basic(fetch = FetchType.EAGER)
     private String image;
 
     @ManyToMany
@@ -103,5 +105,21 @@ public class Study {
         } else {
             throw new RuntimeException("스터디를 종료할 수 없습니다. 스터디를 공개하지 않았거나 이미 종료한 스터디입니다.");
         }
+    }
+
+    public boolean canUpdateRecruiting() {
+        return this.published
+                && this.recruitingUpdateDateTime == null
+                || this.recruitingUpdateDateTime.isBefore(LocalDateTime.now().minusHours(1));
+    }
+
+    public void startRecruit() {
+        this.recruiting = true;
+        this.recruitingUpdateDateTime = LocalDateTime.now();
+    }
+
+    public void stopRecruit() {
+        this.recruiting = false;
+        this.recruitingUpdateDateTime = LocalDateTime.now();
     }
 }
