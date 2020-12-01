@@ -11,6 +11,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Service
@@ -29,6 +30,13 @@ public class StudyService {
 
     public Study getStudyToUpdate(Account account, String path) {
         Study study = this.getStudy(path);
+        checkIfManager(account, study);
+        return study;
+    }
+
+    public Study getStudyToUpdateStatus(Account account, String path) {
+        Study study = studyRepository.findStudyWithManagersByPath(path);
+        checkIfExistingStudy(path, study);
         checkIfManager(account, study);
         return study;
     }
@@ -87,6 +95,14 @@ public class StudyService {
 
     public void removeZone(Study study, Zone zone) {
         study.getZones().remove(zone);
+    }
+
+    public void publish(Study study) {
+        study.publish();
+    }
+
+    public void close(Study study) {
+        study.close();
     }
 
     private void checkIfExistingStudy(String path, Study study) {

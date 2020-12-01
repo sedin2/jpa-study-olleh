@@ -182,6 +182,31 @@ public class StudySettingsController {
                              .orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
+    @GetMapping("/study")
+    public String studySettingsForm(@CurrentUser Account account, @PathVariable String path, Model model) {
+        model.addAttribute(account);
+        model.addAttribute(studyService.getStudyToUpdate(account, path));
+        return "study/settings/study";
+    }
+
+    @PostMapping("/study/publish")
+    public String publishStudy(@CurrentUser Account account, @PathVariable String path,
+                                       RedirectAttributes attributes) throws UnsupportedEncodingException {
+        Study study = studyService.getStudyToUpdateStatus(account, path);
+        studyService.publish(study);
+        attributes.addFlashAttribute("message", "스터디를 공개했습니다.");
+        return "redirect:/study/" + getPath(path) + "/settings/study";
+    }
+
+    @PostMapping("/study/close")
+    public String closeStudy(@CurrentUser Account account, @PathVariable String path,
+                                     RedirectAttributes attributes) throws UnsupportedEncodingException {
+        Study study = studyService.getStudyToUpdateStatus(account, path);
+        studyService.close(study);
+        attributes.addFlashAttribute("message", "스터디를 종료했습니다.");
+        return "redirect:/study/" + getPath(path) + "/settings/study";
+    }
+
     public String getPath(String path) throws UnsupportedEncodingException {
         return URLEncoder.encode(path, String.valueOf(StandardCharsets.UTF_8));
     }
