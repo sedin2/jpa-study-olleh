@@ -4,6 +4,9 @@ import com.studyolleh.account.UserAccount;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -121,5 +124,17 @@ public class Study {
     public void stopRecruit() {
         this.recruiting = false;
         this.recruitingUpdateDateTime = LocalDateTime.now();
+    }
+
+    public void addMember(Account account) {
+        this.getMembers().add(account);
+    }
+
+    public void removeMember(Account account) {
+        this.getMembers().remove(account);
+    }
+
+    public String getEncodedPath() throws UnsupportedEncodingException {
+        return URLEncoder.encode(this.path, String.valueOf(StandardCharsets.UTF_8));
     }
 }
