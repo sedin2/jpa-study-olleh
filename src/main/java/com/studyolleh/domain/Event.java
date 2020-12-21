@@ -83,6 +83,10 @@ public class Event {
         return this.limitOfEnrollments - (int) this.enrollments.stream().filter(Enrollment::isAccepted).count();
     }
 
+    public long getNumberOfAcceptedEnrollments() {
+        return (long) this.enrollments.stream().filter(Enrollment::isAccepted).count();
+    }
+
     private boolean isAlreadyEnrolled(UserAccount userAccount) {
         Account account = userAccount.getAccount();
         for (Enrollment e : this.enrollments) {

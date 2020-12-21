@@ -19,6 +19,7 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Controller
 @RequestMapping("/study/{path}")
@@ -82,10 +83,42 @@ public class EventController {
     }
 
     @GetMapping("/events/{eventId}")
-    public String getEvent(@CurrentUser Account account, @PathVariable String path, @PathVariable Long eventId, Model model) {
+    public String getEvent(@CurrentUser Account account, @PathVariable String path,
+                           @PathVariable Long eventId, Model model) {
         model.addAttribute(account);
         model.addAttribute(eventRepository.findById(eventId).get());
         model.addAttribute(studyService.getStudy(path));
         return "event/view";
+    }
+
+    @GetMapping("/events/{eventId}/edit")
+    public String updateEventForm(@CurrentUser Account account, @PathVariable String path,
+                                  @PathVariable Long eventId, Model model) {
+        Study study = studyService.getStudyToUpdate(account, path);
+        Event event = eventRepository.findById(eventId).orElseThrow(NoSuchElementException::new);
+        model.addAttribute(account);
+        model.addAttribute(study);
+        model.addAttribute(event);
+        model.addAttribute(modelMapper.map(event, EventForm.class));
+        return "event/update-form";
+    }
+
+    @PostMapping("/events/{eventId}/edit")
+    public String updateEventSubmit(@CurrentUser Account account, @PathVariable String path, @PathVariable Long eventId,
+                                    @Valid EventForm eventForm, Errors errors, Model model) {
+        Study study = studyService.getStudyToUpdate(account, path);
+        Event event = eventRepository.findById(eventId).orElseThrow(NoSuchElementException::new);
+        eventForm.setEventType(event.getEventType());
+        eventValidator.validateUpdateForm(eventForm, event, errors);
+
+        if (errors.hasErrors()) {
+            model.addAttribute(account);
+            model.addAttribute(study);
+            model.addAttribute(event);
+            return "event/updtae-form";
+        }
+
+        eventService.updateEvent(event, eventForm);
+        return "redirect:/study/" + study.getPath() + "/events/" + event.getId();
     }
 }
