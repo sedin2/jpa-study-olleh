@@ -16,6 +16,9 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping("/study/{path}")
@@ -53,6 +56,29 @@ public class EventController {
         }
         Event event = eventService.createEvent(modelMapper.map(eventForm, Event.class), study, account);
         return "redirect:/study/" + study.getPath() + "/events/" + event.getId();
+    }
+
+    @GetMapping("/events")
+    public String viewStudyEvents(@CurrentUser Account account, @PathVariable String path, Model model) {
+        Study study = studyService.getStudy(path);
+        model.addAttribute(account);
+        model.addAttribute(study);
+
+        List<Event> events = eventRepository.findByStudyOrderByStartDateTime(study);
+        List<Event> newEvents = new ArrayList<>();
+        List<Event> oldEvents = new ArrayList<>();
+        events.forEach(event -> {
+            if (event.getEndDateTime().isBefore(LocalDateTime.now())) {
+                oldEvents.add(event);
+            } else {
+                newEvents.add(event);
+            }
+        });
+
+        model.addAttribute("newEvents", newEvents);
+        model.addAttribute("oldEvents", oldEvents);
+
+        return "study/events";
     }
 
     @GetMapping("/events/{eventId}")
